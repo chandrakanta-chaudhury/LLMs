@@ -1,0 +1,54 @@
+Here are some tips for scaling search covered here:
+
+• Save memory and reduce costs with binary quantization
+• Use re-rankers to ensure high recall
+• Balance the load with semantic query routing
+
+
+Main components for efficient search for 100M vectos 
+
+1.Router - for handling each query type efficiently
+2.Binary Quantization + Move vectors to disk : 30X cost saving
+3.Re-ranker : Refines search results for improved accuracy
+
+
+user -> initial query - > Router  - > route query - > Binary Quantized on RAM  - > return initial results  back to router  -> ... TO IMPROVE SEARCH GOODNESS.. ->  Query full vectors -- > to Full vector on  DISK -> return refines results
+		---- > send top candidates   ---> Re-ranker  (cross encoder  & Late interactions) --> returns reranked results --- > Router  --- > final results back to user
+
+
+More optimizations :
+1.
+slash the dimension
+Currently at 1536 for about 200 tokens
+A 384 -dimension model could do the job just as well, slashing memory by 4x
+Best -bet , Go for an MRL model like openai's text-3 large
+
+2.
+open source -> closed source over time
+ Leverage real user feedback  to refine the open-source model 
+Continuously update with fresh vocabulary as the product catalog evolves .
+
+3. How to make Elastic (BM25) + vector search work together ?
+
+using a reciprocal rank fusion (rrf) that focuses on rank info, not scores, to merge rankings  , It also allows us to add and combine  uncorrelated search signals
+
+RRF(d) = sum 1/ (k+r(d)) , where K= 60 constant , and r(d) = rank of document d
+
+
+Bonus : But also use re-ranker for goodness
+
+1. Use models like answer-colbert-small-v1 or cohere re-ranker
+2. Quickly re-rank hundreds of candidates , compensate for recall loss from binary quantization
+3. Main components - >solutions 
+	FAST - Balance load with semantic query routers
+	GOOD - Use re-rankers for high  recall
+	CHEAP - Binary Quantization  + Move vectors and index to disk
+
+
+
+
+---
+
+
+
+
