@@ -1,0 +1,83 @@
+How to easily deploy "LangChain" based LLM applications in Prod? Use LangServe ! specifically designed for deploying LLMs.
+ 
+LangServe is a Langchain project available as python package. It
+- deploys any Langchain agent in prod 
+- builds LLM apps over REST API
+- uses FastAPI to construct routes and build web services
+--------———- 
+ 
+Ex, You are building a ChatGPT Agent to summarize text. 
+ 
+It has 4 phases:
+1) Build Prototype - in Jupyter notebook and improvise until good enough to productionize
+2) Prod-ready API - ex. LangServe
+3) Live deployment - Hosting Platform (ex, AWS , Azure , GCP)
+4) Monitor prod deployment - LangSmith Tracing / 3rd Party tools
+ ———-
+
+The 6 easy steps to #2 ; Build Prod ready api in Langserve are:
+
+(1) Installation
+ a. Install both both client and server components
+ pip install "langserve[all]"
+ 
+ b. Install LangChain CLI (get access to Langchain commands) and Poetry
+ install -U langchain-cli poetry 
+ 
+Wht's Poetry?
+- tool for dependency management & packaging in Python. 
+- helps declare libraries the project depends on and install/update them.
+ 
+(2) Create new app - Use LangChain CLI 
+ app new my-app
+ 
+(3) Add third-party packages with Poetry
+ poetry add langchain-openai 
+ 
+(4) Navigate to app/server .py file (contains MAIN logic for LangServe app) and edit below.
+ a. Import modules: 
+ - FastAPI - to create web server.
+ - ChatPromptTemplate & ChatOpenAI (from LangChain)- to define prompts and models
+ - add_routes (from LangServe)- to add routes to FastAPI app.
+ 
+ b. Initialize FastAPI app
+ app = FastAPI( title="LangChain Server", version="1.0", description = "LangServe API" )
+ 
+ c. Add Routes
+ 1. Define route for OpenAI chat model
+ add_routes( app, ChatOpenAI(), path="/openai" )
+ 
+ 2. Define route with custom prompt
+ summarize_prompt = ChatPromptTemplate.from_template ( "Summarize this text: {text}" )
+ add_routes( app, summarize_prompt | ChatOpenAI(), path="/openai" )
+ 
+ d. Run Server
+ uvicorn .run func() - to start FastAPI server on localhost at port 8000
+ uvicorn .run(app, host="localhost", port=8000)
+ 
+ e. save app/server .py file
+ 
+(5) Test - Run below from app root directory
+ langchain serve
+ Navigate: http : // 127 . 0 . 0 .1 : 8000 / summarize /playground / in browser
+ Playground URL gives interface to test and debug app
+ 
+(6) Implement Monitoring and Health checks
+ @app.get("/health")
+ async def health():
+ return {"status": "Healthy"}
+ --------
+ 
+Drawback of LangServe ? It LACKS built-in monitoring features. 
+Hence, you can use below for monitoring:
+1. LangSmith Tracing
+ 
+2. Integrate with 3rd party tools.
+ex. Prometheus - integrates with FastAPI to collect metrics and provide insights into app's performance
+ 
+You can deploy LangServe to AWS , AZURE or GCP cloud Run.
+ 
+Other useful tools for productionizing LLMs are MLflow, Kubernetes, AWS Sagemaker, TensorFlow Serving etc.
+ 
+Prod deployment is multi layered. 
+
